@@ -17,6 +17,7 @@ def add_page(title, lines):
 ymd_to_tweet = defaultdict(list)
 ym_to_ymd = defaultdict(set)
 y_to_ym = defaultdict(set)
+md_to_ymd = defaultdict(set)
 
 INFILE = "tweets.csv"
 pages = []
@@ -32,13 +33,14 @@ for row in reader:
     ymd = dt.strftime("%Y-%m-%d")
     ym = dt.strftime("%Y-%m")
     y = dt.strftime("%Y")
+    md = dt.strftime("%m%d")
     url = "https://twitter.com/nishio/status/{}".format(tid)
     link_to_tweet = "[T {}]".format(url)
 
     ymd_to_tweet[ymd].append(" {} {}".format(text, link_to_tweet))
     ym_to_ymd[ym].add(ymd)
     y_to_ym[y].add(ym)
-
+    md_to_ymd[md].add(ymd)
 
 for y in y_to_ym:
     add_page(
@@ -55,6 +57,15 @@ for ymd in sorted(ymd_to_tweet):
         title=ymd,
         lines=list(reversed(ymd_to_tweet[ymd])))
 
+for md in md_to_ymd:
+    lines = []
+    for ymd in sorted(md_to_ymd[md], reverse=True):
+        lines.append("[{}]".format(ymd))
+        lines.extend(reversed(ymd_to_tweet[ymd]))
+    add_page(
+        title=md,
+        lines=lines)
+        
 json.dump(dict(pages=pages), codecs.open('to_scrapbox.json', 'w', encoding="utf-8"), ensure_ascii=False, indent=2)
 
 
